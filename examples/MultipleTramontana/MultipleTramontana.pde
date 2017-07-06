@@ -12,10 +12,12 @@ import websockets.*;
 
 /* Create an instance of Tramonana */
 Tramontana t;
+Tramontana t1;
 
 void setup(){
  size(480,240);
  t = new Tramontana(this,"192.168.1.10");
+ t1 = new Tramontana(this,"192.168.1.14");
 }
 void draw(){
   background(255);
@@ -24,5 +26,9 @@ void draw(){
 }
 void mousePressed(){
   t.makeVibrate();
-  
+  t.subscribeTouch();
+}
+void onTouchEvent(String ipAddress, int x, int y)
+{
+  t1.blinkColorEmbedded(0,255,0,0);
 }
