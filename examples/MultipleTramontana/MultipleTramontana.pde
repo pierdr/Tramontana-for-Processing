@@ -25,10 +25,11 @@ void draw(){
   text("Hello Tramontana!",width/2-(textWidth("Hello Tramontana!")/2),height/2);
 }
 void mousePressed(){
-  t.makeVibrate();
+  /* With this line of code you are subscribing for touch events from the first tramontana */
   t.subscribeTouch();
 }
 void onTouchEvent(String ipAddress, int x, int y)
 {
-  t1.blinkColorEmbedded(0,255,0,0);
+  /* When the screen of the first tramontana is touched,it sets the color of the screen of the second tramontana */
+  t1.setColor(255,0,0,255);
 }

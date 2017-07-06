@@ -15,6 +15,7 @@ Tramontana t;
 
 void setup(){
  size(480,240);
+ /* Start the connection with Tramontana iOS/AppleTV */
  t = new Tramontana(this,"192.168.1.10");
 }
 void draw(){
@@ -23,6 +24,7 @@ void draw(){
   text("Hello Tramontana!",width/2-(textWidth("Hello Tramontana!")/2),height/2);
 }
 void mousePressed(){
+  /* This will make the haptic engine of your iDevice vibrate */
   t.makeVibrate();
   
 }
