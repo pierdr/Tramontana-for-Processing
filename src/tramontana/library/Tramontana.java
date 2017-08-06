@@ -37,6 +37,7 @@ public class Tramontana {
 	private Method onOrientationEvent;
 	private Method onPowerSourceEvent;
 	private Method onTouchEvent;
+	private Method onTouchDownEvent;
 	private Method gotBatteryUpdate;
 	private Method onEmbeddedRxEvent;
 	
@@ -125,6 +126,16 @@ public class Tramontana {
         		// no such method, or an error.. which is fine, just ignore
         }
 		try {
+			Class<?> params[] = new Class[3];
+			params[0] = String.class;
+			params[1] = int.class;
+			params[2] = int.class;
+			onTouchDownEvent = parent.getClass().getMethod("onTouchDownEvent", params);
+        } catch (Exception e) {
+        	
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		try {
 			Class<?> params[] = new Class[2];
 			params[0] = String.class;
 			params[1] = float.class;
@@ -158,12 +169,17 @@ public class Tramontana {
 			t.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Reconnect can be called if you lose connection with a tramontana node.
+	 */
 	public void reconnect()
 	{
 		connectToSocket("ws://"+ipAddress+":9092");
 	}
-	
+	/**
+	 * @deprecated  Don't use sendMessage.
+	 * 
+	 */
 	public void sendMessage(String msg)
 	{
 		try {
@@ -175,8 +191,12 @@ public class Tramontana {
 			//reconnect?
 		}
 	}
+	/**
+	 * @deprecated  Don't listen to onMessageEvent.
+	 * 
+	 */
 	public void onMessageEvent(String msg) {
-		System.out.println(msg);
+		//System.out.println(msg);
 		try {
 			workingJson = sketch.parseJSONObject(msg);
 		}catch(Exception e)
@@ -225,7 +245,7 @@ public class Tramontana {
 			else if(event.contains("distanceChanged"))
 			{
 				try {	
-					onAudioJackEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("proximity")));
+					onDistanceEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("proximity")));
 				}
 				catch (Exception e) {
 					System.out.println(e);
@@ -267,10 +287,19 @@ public class Tramontana {
 					System.out.println(e);
 				}
 			}
-			else if(event.contains("touched"))
+			else if(event.equals("touched"))
 			{
 				try {	
 					onTouchEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
+				}
+				catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+			else if(event.equals("touchedDown"))
+			{
+				try {	
+					onTouchDownEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
 				}
 				catch (Exception e) {
 					System.out.println(e);
@@ -281,24 +310,71 @@ public class Tramontana {
 		
 	}
 	/* EMBEDDED */
+	/**
+	 * SetServoEmbedded is a method to control servo motors on tramontana boards.                           
+	 * <p>
+	 *
+	 * @param  servoIndex will define the index of the servo you want to control          
+	 * @param  the second parameter is a number between 0 and 180.
+	 */
 	public void setServoEmbedded(int servoIndex, int value) {
 		
 		socket.sendMessage("{\"m\":\"srv\",\"n\":"+servoIndex+",\"v\":"+value+"}");
 	}
+	/**
+	 * setRelayEmbedded is a method to control relay modules on tramontana boards.                           
+	 * <p>
+	 *
+	 * @param  relayIndex will define the index of the relay you want to control          
+	 * @param  the second parameter can be 0 (relay off) and 1 (relay on).
+	 */
 	public void setRelayEmbedded(int relayIndex, int value) {
 		socket.sendMessage("{\"m\":\"rel\",\"n\":"+relayIndex+",\"v\":"+Math.round(value)+"}");
 	}
+	/**
+	 * sendSerialMessageEmbedded allows to connect a tramontana board with an other serial board like an Arduino.                           
+	 * <p>
+	 *
+	 * @param  relayIndex will define the index of the relay you want to control          
+	 * @param  the second parameter can be 0 (relay off) and 1 (relay on).
+	 */
 	public void sendSerialMessageEmbedded(String msg)
 	{
 		socket.sendMessage("{\"m\":\"tx\",\"v\":\""+msg+"\"}");
 	}
+	/**
+	 * setColorEmbedded allows to change the color of leds connected to tramontana board (led should be WS2812). The index number 0 is controlling the onboard LED.                          
+	 * <p>
+	 *
+	 * @param  ledIndex will define the index of the led you want to control          
+	 * @param  red component.
+	 * @param  blue component.
+	 * @param  green component.
+	 */
 	public void setColorEmbedded(int ledIndex,int red, int green, int blue) {
 		socket.sendMessage("{\"m\":\"col\",\"n\":\""+ledIndex+"\",\"r\":\""+Math.floor(red)+"\",\"g\":\""+Math.floor(green)+"\",\"b\":\""+Math.floor(blue)+"\"}");
 	}
+	/**
+	 * blinkColorEmbedded works similar to {@link #setColorEmbedded(int ledIndex,int red, int green, int blue) setColorEmbedded}.                          
+	 * <p>
+	 *
+	 * @param  ledIndex will define the index of the led you want to control          
+	 * @param  red component.
+	 * @param  blue component.
+	 * @param  green component.
+	 */
 	public void blinkColorEmbedded(int ledIndex,int red, int green, int blue)
 	{
 		socket.sendMessage("{\"m\":\"blk\",\"n\":\""+ledIndex+"\",\"r\":\""+Math.floor(red)+"\",\"g\":\""+Math.floor(green)+"\",\"b\":\""+Math.floor(blue)+"\"}");
 	}
+	/**
+	 * setAllColorEmbedded will affect all the leds connected to a tramontana board (max 255).                          
+	 * <p>
+	 *          
+	 * @param  red component.
+	 * @param  blue component.
+	 * @param  green component.
+	 */
 	public void setAllColorEmbedded(int red, int green, int blue) {
 		socket.sendMessage("{\"m\":\"all\",\"r\":\""+Math.floor(red)+"\",\"g\":\""+Math.floor(green)+"\",\"b\":\""+Math.floor(blue)+"\"}");;
 	}
@@ -306,9 +382,8 @@ public class Tramontana {
 	/**
 	 * Actuate the haptic engine.
 	 * 
-	 * @return void
+	 * 
 	 */
-	
 	public void makeVibrate() {
 		
 		sendMessage("{\"m\":\"makeVibrate\"}");
@@ -317,7 +392,7 @@ public class Tramontana {
 	/**
 	 * Change iDevice brightness. brightness should be between 0.0 and 1.0
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void setBrightness(float brightness)
 	{
@@ -333,7 +408,7 @@ public class Tramontana {
 	 * Change the screen color. 
 	 * Parameters 'int red, int green, int blue, int intensity' should be between 0 and 255
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void setColor(int red, int green, int blue, int intensity) {
 		sendMessage("{\"m\":\"setColor\",\"r\":\""+((float)red/255.0)+"\",\"g\":\""+((float)green/255.0)+"\",\"b\":\""+((float)blue/255.0)+"\",\"a\":\""+((float)intensity/255.0)+"\"}");
@@ -342,7 +417,7 @@ public class Tramontana {
 	 * Change the screen color. 
 	 * Parameters 'float red, float green, float blue, float intensity' should be between 0.0 and 1.0
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void setColor(float red, float green, float blue, float intensity) {
 		if(red<=1.0 && green<=1.0 && blue<=1.0 && intensity<=1.0)
@@ -357,7 +432,7 @@ public class Tramontana {
 	/**
 	 * Actuate the flash light. Input value between 0.0 (off) and 1.0 (full brightness)
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void setFlashLight(float onValue)
 	{
@@ -368,7 +443,7 @@ public class Tramontana {
 	 * Each pulse will have the duration specified in the second parameter.
 	 * The last parameter determines the intensity of the LED.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void pulseFlashLight(int numberOfPulses, float duration,float intensity)
 	{
@@ -407,7 +482,7 @@ public class Tramontana {
 	 * @param 
 	 * (int) 		which camera 0 frontal camera, 1 back camera
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void takePicture() {
 		sendMessage("{\"m\":\"takePicture\"}");
@@ -421,7 +496,7 @@ public class Tramontana {
 	 * @param 
 	 * (int) 		which camera 0 frontal camera, 1 back camera
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void takePictureWithUI(int camera) {
 		
@@ -431,7 +506,7 @@ public class Tramontana {
 	/**
 	 * Provide two colors and duration. The screen of your iDevice will be changing the color screen accordingly.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void transitionColors(float r1, float g1, float b1, float a1, float r2, float g2, float b2, float a2, float duration) {
 		sendMessage("{\"m\":\"transitionColors\",\"r1\":\""+r1+"\",\"g1\":\""+g1+"\",\"b1\":\""+b1+"\",\"a1\":\""+a1+"\",\"r2\":\""+r2+"\",\"g2\":\""+g2+"\",\"b2\":\""+b2+"\",\"a2\":\""+a2+"\",\"duration\":\""+duration+"\"}");
@@ -444,7 +519,7 @@ public class Tramontana {
 	/**
 	 * Subscribe to the distance sensor.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribeDistance() {
 		sendMessage("{\"m\":\"registerDistance\"}");
@@ -456,7 +531,7 @@ public class Tramontana {
 	/**
 	 * Subscribe to the touch events. Doesn't support multitouch.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribeTouch() {
 		sendMessage("{\"m\":\"registerTouch\"}");
@@ -469,7 +544,7 @@ public class Tramontana {
 	 * @param
 	 * the parameter specify the update frequency in Hz. Keep it low, suggested: 5Hz, default: 1Hz
 	 * {@code Test}
-	 * @return void
+	 * 
 	 */
 	public void subscribeAttitude() {
 		sendMessage("{\"m\":\"registerAttitude\",\"f\":\"1\"}");
@@ -483,7 +558,7 @@ public class Tramontana {
 	/**
 	 * Be notified if the audio jack is inserted or removed.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribeAudioJack() {
 		sendMessage("{\"m\":\"registerAudioJack\"}");
@@ -494,7 +569,7 @@ public class Tramontana {
 	/**
 	 * Be notified if the power source change.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribePowerSource() {
 		sendMessage("{\"m\":\"registerPowerSource\"}");
@@ -505,7 +580,7 @@ public class Tramontana {
 	/**
 	 * Subscribe to magnetometer. The magnetometer is filtering low magnetic fields. You will be notified if a consistent magnetic field is near your iDevice.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribeMagnetometer() {
 		sendMessage("{\"m\":\"registerMagnetometer\"}");
@@ -516,7 +591,7 @@ public class Tramontana {
 	/**
 	 * Subscribe to orientation change.
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribeOrientation() {
 		sendMessage("{\"m\":\"registerOrientation\"}");
@@ -526,7 +601,7 @@ public class Tramontana {
 	}
 	/**
 	 * 
-	 * @return void
+	 * 
 	 */
 	public void subscribeRxEmbedded() {
 		sendMessage("{\"m\":\"srx\"}");
