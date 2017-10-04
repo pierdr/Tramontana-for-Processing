@@ -9,8 +9,8 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import processing.core.PApplet;
 import processing.data.*;
-
-
+import java.util.ArrayList;
+import tramontana.library.TVector;
 
 
 /**
@@ -38,14 +38,22 @@ public class Tramontana {
 	private Method onPowerSourceEvent;
 	private Method onTouchEvent;
 	private Method onTouchDownEvent;
+	private Method onTouchDragEvent;
+	
+	private Method onMultiTouchEvent;
+	private Method onMultiTouchDownEvent;
+	private Method onMultiTouchDragEvent;
+	
 	private Method gotBatteryUpdate;
 	private Method onEmbeddedRxEvent;
+	
+	
 	
 	private WebsocketClientEventsTramontana socket;
 	WebSocketClient client;
 	public String ipAddress;
 	private JSONObject workingJson;
-	
+	private ArrayList<TVector> workingArray;
 	
 	public final static String VERSION = "1.0.0";
 	
@@ -53,7 +61,7 @@ public class Tramontana {
 	public Tramontana(PApplet parent,String IP) {
 		sketch = parent;
 		ipAddress = IP;
-		
+		workingArray = new ArrayList<TVector>();
 		
 		/* COLLECT METHODS ON PROCESSING */
 		try {
@@ -130,11 +138,53 @@ public class Tramontana {
 			params[0] = String.class;
 			params[1] = int.class;
 			params[2] = int.class;
+			onTouchDragEvent = parent.getClass().getMethod("onTouchDragEvent", params);
+        } catch (Exception e) {
+        	
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		try {
+			Class<?> params[] = new Class[3];
+			params[0] = String.class;
+			params[1] = int.class;
+			params[2] = int.class;
 			onTouchDownEvent = parent.getClass().getMethod("onTouchDownEvent", params);
         } catch (Exception e) {
         	
         		// no such method, or an error.. which is fine, just ignore
         }
+		//-------------------------
+		try {
+			Class<?> params[] = new Class[3];
+			params[0] = String.class;
+			params[1] = ArrayList.class;
+			params[2] = int.class;
+			onMultiTouchEvent = parent.getClass().getMethod("onMultiTouchEvent", params);
+        } catch (Exception e) {
+        	
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		try {
+			Class<?> params[] = new Class[3];
+			params[0] = String.class;
+			params[1] = ArrayList.class;
+			params[2] = int.class;
+			onMultiTouchDragEvent = parent.getClass().getMethod("onMultiTouchDragEvent", params);
+        } catch (Exception e) {
+        		//System.out.println("missing touch drag method");
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		try {
+			Class<?> params[] = new Class[3];
+			params[0] = String.class;
+			params[1] = ArrayList.class;
+			params[2] = int.class;
+			onMultiTouchDownEvent = parent.getClass().getMethod("onMultiTouchDownEvent", params);
+        } catch (Exception e) {
+        	
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		//-------------------------
 		try {
 			Class<?> params[] = new Class[2];
 			params[0] = String.class;
@@ -290,19 +340,71 @@ public class Tramontana {
 			else if(event.equals("touched"))
 			{
 				try {	
-					onTouchEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
+					if(workingJson.hasKey("ts"))
+					{
+						JSONArray arrTmp = workingJson.getJSONArray("ts");
+						workingArray.clear();
+						for(int i=0;i<arrTmp.size();i++)
+						{
+							workingArray.add(new TVector(PApplet.parseInt((String)arrTmp.getJSONObject(i).get("x")),PApplet.parseInt((String)arrTmp.getJSONObject(i).get("y"))));
+						}
+						onMultiTouchEvent.invoke(sketch,ipAddress,workingArray,(int)arrTmp.size());
+					}
+					else
+					{
+						onTouchEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
+					}
 				}
 				catch (Exception e) {
-					System.out.println(e);
+					
+				}
+			}
+			else if(event.equals("drag"))
+			{
+				try {
+					
+					if(workingJson.hasKey("ts"))
+					{
+						
+						JSONArray arrTmp = workingJson.getJSONArray("ts");
+						
+						workingArray.clear();
+						for(int i=0;i<arrTmp.size();i++)
+						{
+							workingArray.add(new TVector(PApplet.parseInt( (String)arrTmp.getJSONObject(i).get("x") ),PApplet.parseInt((String) arrTmp.getJSONObject(i).get("y") ) ) );
+						}
+						
+						onMultiTouchDragEvent.invoke(sketch,ipAddress,workingArray,PApplet.parseInt(arrTmp.size()));
+					}
+					else
+					{
+						onTouchDragEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
+					}
+				}
+				catch (Exception e) {
+					
 				}
 			}
 			else if(event.equals("touchedDown"))
 			{
-				try {	
-					onTouchDownEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
+				try {
+					if(workingJson.hasKey("ts"))
+					{
+						JSONArray arrTmp = workingJson.getJSONArray("ts");
+						workingArray.clear();
+						for(int i=0;i<arrTmp.size();i++)
+						{
+							workingArray.add(new TVector(PApplet.parseInt((String)arrTmp.getJSONObject(i).get("x")),PApplet.parseInt((String)arrTmp.getJSONObject(i).get("y"))));
+						}
+						onMultiTouchDownEvent.invoke(sketch,ipAddress,workingArray,(int)arrTmp.size());
+					}
+					else
+					{
+						onTouchDownEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("x")),PApplet.parseInt((String)workingJson.get("y")));
+					}
 				}
 				catch (Exception e) {
-					System.out.println(e);
+					
 				}
 			}
 			
@@ -515,6 +617,52 @@ public class Tramontana {
 	public void getBatteryLevel() {
 		sendMessage("{\"m\":\"getBattery\"}");
 	}
+	/* OSC - WEKINATOR */
+	/**
+	 * Activate the OSC engine to send accelerometer information, useful to communicate with wekinator for example or a live performance installation that requires better realtime performances than websockets.
+	 * 
+	 * 
+	 */
+	public void sendAttitudeDataToOSC(float frequency, int port) {
+		try {
+			sendAttitudeDataToOSC(frequency,port,java.net.InetAddress.getLocalHost().getHostAddress());
+			
+		} catch(Exception e) {
+			System.out.println("sendAttitudeDataToOSC error - impossible to retrieve local host address:\n "+e);
+		}
+		
+	}
+	public void sendAttitudeDataToOSC(float frequency, int port,String ip) {
+		sendMessage("{\"m\":\"a2w\",\"p\":\""+port+"\",\"i\":\""+ip+"\",\"f\":\""+frequency+"\"}");
+	}
+	/**
+	 * Activate the OSC engine to send touch data, useful to communicate with wekinator for example or a live performance installation that requires better realtime performances than websockets.
+	 * 
+	 * 
+	 */
+	public void sendTouchDataToOSC(int maxNumFingers) {
+		sendTouchDataToOSC(maxNumFingers,9093);
+	}
+	public void sendTouchDataToOSC(int maxNumFingers,int port) {
+		try {
+			sendTouchDataToOSC(maxNumFingers,port,java.net.InetAddress.getLocalHost().getHostAddress());
+			
+		} catch(Exception e) {
+			System.out.println("sendTouchDataToOSC error - impossible to retrieve local host address:\n "+e);
+		}
+		
+	}
+	public void sendTouchDataToOSC(int maxNumFingers,int port,String ip) {
+		sendMessage("{\"m\":\"t2w\",\"p\":\""+port+"\",\"i\":\""+ip+"\",\"n\":\""+maxNumFingers+"\"}");
+	}
+	public void stopAttitudeDataToOSC()
+	{
+		sendMessage("{\"m\":\"sa2w\"}");
+	}
+	public void stopTouchDataToOSC()
+	{
+		sendMessage("{\"m\":\"st2w\"}");
+	}
 	/* SENSING */
 	/**
 	 * Subscribe to the distance sensor.
@@ -536,8 +684,21 @@ public class Tramontana {
 	public void subscribeTouch() {
 		sendMessage("{\"m\":\"registerTouch\"}");
 	}
+	public void subscribeTouch(Boolean multitouch) {
+		
+		sendMessage("{\"m\":\"registerTouch\""+((multitouch)?",\"multi\":\"1\"":"")+"}");
+	}
 	public void releaseTouch() {
 		sendMessage("{\"m\":\"releaseTouch\"}");
+	}
+	public void subscribeTouchDrag() {
+		sendMessage("{\"m\":\"registerTouchDrag\"}");
+	}
+	public void subscribeTouchDrag(Boolean multitouch) {
+		sendMessage("{\"m\":\"registerTouchDrag\" "+((multitouch)?",\"multi\":\"1\"":"")+" }");
+	}
+	public void releaseTouchDrag() {
+		sendMessage("{\"m\":\"releaseTouchDrag\"}");
 	}
 	/**
 	 * Subscribe to Motion sensor (accelerometer).
