@@ -45,7 +45,7 @@ version = 4  # This must be parsable as an int
 
 # The version as the user will see it. If blank, the version attribute will be 
 # used here. This should be a single word, with no spaces.
-prettyVersion = 0.9.5  # This is treated as a String
+prettyVersion = 0.9.6  # This is treated as a String
 
 # The min and max revision of Processing compatible with your Library.
 # Note that these fields use the revision and not the version of Processing, 
