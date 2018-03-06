@@ -78,7 +78,10 @@ public class WebsocketClientEventsTramontana {
 	 */
 	public void sendMessage(String str) {
 		try {
-			session.getRemote().sendString(str);
+			if(session.isOpen())
+			{
+				session.getRemote().sendString(str);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -93,7 +96,8 @@ public class WebsocketClientEventsTramontana {
 	@OnWebSocketError
 	public void onError(Throwable cause) {
 		System.out.printf("onError(%s: %s)%n",cause.getClass().getSimpleName(), cause.getMessage());
-		cause.printStackTrace(System.out);
+		//cause.printStackTrace(System.out);
+		
 		isOpen = false;
 	}
 

@@ -1,16 +1,14 @@
 package tramontana.library;
-import processing.core.*;
-
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.ArrayList;
+
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
-
 import processing.core.PApplet;
-import processing.data.*;
-import java.util.ArrayList;
-import tramontana.library.TVector;
+import processing.data.JSONArray;
+import processing.data.JSONObject;
 
 
 /**
@@ -45,7 +43,11 @@ public class Tramontana {
 	private Method onMultiTouchDragEvent;
 	
 	private Method gotBatteryUpdate;
+	
 	private Method onEmbeddedRxEvent;
+	private Method onEmbeddedLDRUpdate;
+	private Method onEmbeddedBtnsEvent;
+	private Method onEmbeddedAnalogUpdate;
 	
 	
 	
@@ -193,11 +195,47 @@ public class Tramontana {
         } catch (Exception e) {
         		// no such method, or an error.. which is fine, just ignore
         }
+		/****
+		EMBEDDED
+		****/
+		//-------------------------
 		try {
 			Class<?> params[] = new Class[2];
 			params[0] = String.class;
 			params[1] = String.class;
 			onEmbeddedRxEvent = parent.getClass().getMethod("onEmbeddedRxEvent", params);
+        } catch (Exception e) {
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		//-------------------------
+		
+		try {
+			Class<?> params[] = new Class[2];
+			params[0] = String.class;
+			params[1] = int.class;
+			onEmbeddedLDRUpdate = parent.getClass().getMethod("onEmbeddedLDRUpdate", params);
+        } catch (Exception e) {
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		//-------------------------
+		
+		try {
+			Class<?> params[] = new Class[2];
+			params[0] = String.class;
+			params[1] = int.class;
+			onEmbeddedAnalogUpdate = parent.getClass().getMethod("onEmbeddedAnalogUpdate", params);
+        } catch (Exception e) {
+        		// no such method, or an error.. which is fine, just ignore
+        }
+		
+		//-------------------------
+				
+		try {
+			Class<?> params[] = new Class[3];
+			params[0] = String.class;
+			params[1] = int.class;
+			params[2] = int.class;
+			onEmbeddedBtnsEvent = parent.getClass().getMethod("onEmbeddedBtnsEvent", params);
         } catch (Exception e) {
         		// no such method, or an error.. which is fine, just ignore
         }
@@ -246,7 +284,7 @@ public class Tramontana {
 	 * 
 	 */
 	public void onMessageEvent(String msg) {
-		//System.out.println(msg);
+//		System.out.println(msg);
 		try {
 			workingJson = sketch.parseJSONObject(msg);
 		}catch(Exception e)
@@ -328,15 +366,7 @@ public class Tramontana {
 					System.out.println(e);
 				}
 			}
-			else if(event.equals("rx"))
-			{
-				try {	
-					onEmbeddedRxEvent.invoke(sketch,ipAddress,(String)workingJson.get("v"));
-				}
-				catch (Exception e) {
-					System.out.println(e);
-				}
-			}
+			
 			else if(event.equals("touched"))
 			{
 				try {	
@@ -407,11 +437,50 @@ public class Tramontana {
 					
 				}
 			}
+			else if(event.equals("rx"))
+			{
+				try {	
+					onEmbeddedRxEvent.invoke(sketch,ipAddress,(String)workingJson.get("v"));
+				}
+				catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+			else if(event.equals("btn"))
+			{
+				try {	
+					onEmbeddedBtnsEvent.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("n")),PApplet.parseInt((String)workingJson.get("v")));
+				}
+				catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+			else if(event.equals("ldr"))
+			{
+				try {	
+					onEmbeddedLDRUpdate.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("v")));
+				}
+				catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+			else if(event.equals("analog"))
+			{
+				try {	
+					onEmbeddedAnalogUpdate.invoke(sketch,ipAddress,PApplet.parseInt((String)workingJson.get("n")),PApplet.parseInt((String)workingJson.get("v")));
+				}
+				catch (Exception e) {
+					System.out.println(e);
+				}
+			}
 			
 			
 		
 	}
 	/* EMBEDDED */
+	
+	
+	
 	/**
 	 * SetServoEmbedded is a method to control servo motors on tramontana boards.                           
 	 * <p>
@@ -424,15 +493,28 @@ public class Tramontana {
 		socket.sendMessage("{\"m\":\"srv\",\"n\":"+servoIndex+",\"v\":"+value+"}");
 	}
 	/**
-	 * setRelayEmbedded is a method to control relay modules on tramontana boards.                           
+	 * setRelayEmbedded is a method to deactivate relay modules on tramontana boards.                           
 	 * <p>
 	 *
-	 * @param  relayIndex will define the index of the relay you want to control          
-	 * @param  the second parameter can be 0 (relay off) and 1 (relay on).
+	 * @param  relayIndex will define the index of the relay you want to turn OFF          
+	 * 
 	 */
-	public void setRelayEmbedded(int relayIndex, int value) {
-		socket.sendMessage("{\"m\":\"rel\",\"n\":"+relayIndex+",\"v\":"+Math.round(value)+"}");
+	public void setRelayEmbeddedOff(int relayIndex) {
+		socket.sendMessage("{\"m\":\"rel\",\"n\":\""+relayIndex+"\",\"v\":\"0\"}");
 	}
+	/**
+	 * setRelayEmbeddedOn is a method to activate relay modules on tramontana boards.                           
+	 * <p>
+	 *
+	 * @param  relayIndex will define the index of the relay you want to turn ON          
+	 * 
+	 */
+	public void setRelayEmbeddedOn(int relayIndex) {
+		socket.sendMessage("{\"m\":\"rel\",\"n\":\""+relayIndex+"\",\"v\":\"1\"}");
+	}
+//	public void setRelayEmbedded(int relayIndex, int value) {
+//		socket.sendMessage("{\"m\":\"rel\",\"n\":"+relayIndex+",\"v\":"+(int)Math.round(value)+"}");
+//	}
 	/**
 	 * sendSerialMessageEmbedded allows to connect a tramontana board with an other serial board like an Arduino.                           
 	 * <p>
@@ -453,6 +535,7 @@ public class Tramontana {
 	 * @param  blue component.
 	 * @param  green component.
 	 */
+	
 	public void setColorEmbedded(int ledIndex,int red, int green, int blue) {
 		socket.sendMessage("{\"m\":\"col\",\"n\":\""+ledIndex+"\",\"r\":\""+Math.floor(red)+"\",\"g\":\""+Math.floor(green)+"\",\"b\":\""+Math.floor(blue)+"\"}");
 	}
@@ -613,6 +696,7 @@ public class Tramontana {
 	public void transitionColors(float r1, float g1, float b1, float a1, float r2, float g2, float b2, float a2, float duration) {
 		sendMessage("{\"m\":\"transitionColors\",\"r1\":\""+r1+"\",\"g1\":\""+g1+"\",\"b1\":\""+b1+"\",\"a1\":\""+a1+"\",\"r2\":\""+r2+"\",\"g2\":\""+g2+"\",\"b2\":\""+b2+"\",\"a2\":\""+a2+"\",\"duration\":\""+duration+"\"}");
 	}
+	
 	/* INFO */
 	public void getBatteryLevel() {
 		sendMessage("{\"m\":\"getBattery\"}");
@@ -663,6 +747,7 @@ public class Tramontana {
 	{
 		sendMessage("{\"m\":\"st2w\"}");
 	}
+	
 	/* SENSING */
 	/**
 	 * Subscribe to the distance sensor.
@@ -760,8 +845,21 @@ public class Tramontana {
 	public void releaseOrientation() {
 		sendMessage("{\"m\":\"releaseOrientation\"}");
 	}
+	
+	
+
+	
 	/**
 	 * 
+	 * EMBEDDED
+	 * Subscribe RX will make Tramontana NANO or Tramontana PICO act as proxy for incoming messaging coming on the serial port
+	 * It is possible to intercept the messages from Processing with the method:
+	 *  
+	 *  
+	 *  void onEmbeddedRxEvent(String ip,String msg)
+	 *  {
+	 *  		println("serial message received:"+msg);
+	 *  }
 	 * 
 	 */
 	public void subscribeRxEmbedded() {
@@ -769,6 +867,75 @@ public class Tramontana {
 	}
 	public void releaseRxEmbedded() {
 		sendMessage("{\"m\":\"drx\"}");
+	}
+	/**
+	 * 
+	 * EMBEDDED
+	 * Listen for buttons event from Tramontana NANO or Tramontana PICO.
+	 * The second parameter (btnIndex) identify which of the two buttons and the third parameter (btnValue) correspond to the state of the button, 1 pressed, 0 depressed. 
+	 * 
+	 * void onEmbeddedBtnsEvent(String ip,int btnIndex, int btnValue)
+	 *  {
+	 *  		println("serial message received:"+msg);
+	 *  }
+	 * 
+	 */
+	public void subscribeButtonsEventEmbedded() {
+		sendMessage("{\"m\":\"sbtn\"}");
+	}
+	public void releaseButtonsEventEmbedded() {
+		sendMessage("{\"m\":\"dbtn\"}");
+	}
+	/**
+	 * 
+	 * EMBEDDED
+	 *  You can subscribe to the analog input on Tramontana NANO or Tramontana PICO.
+	 *  The board will send an updated reading with the specified frequency.
+	 *  The value is received by the method:
+	 *  void onEmbeddedAnalogUpdate(String ip, int value)
+	 *  {
+	 *  		println(value);
+	 *  }
+	 *  
+	 */
+	public void subscribeAnalogEmbedded(int frequency) {
+		if(frequency>0 )
+		{
+			sendMessage("{\"m\":\"sanalog\",\"f\":\""+frequency+"\"}");
+		}
+		else
+		{
+			//frequency must be greater than 0
+		}
+	}
+	
+	public void releaseAnalogEmbedded() {
+		sendMessage("{\"m\":\"danalog\"}");
+	}
+	/**
+	 * 
+	 * EMBEDDED
+	 * You can subscribe to the integrated LDR on Tramontana NANO or Tramontana PICO.
+	 *  The board will send an updated reading of the light value with the specified frequency.
+	 * 
+	 *  void onEmbeddedLDRUpdate(String ip, int value)
+	 *  {
+	 *  		println(value);
+	 *  }
+	 */
+	public void subscribeLDREmbedded(int frequency) {
+		if(frequency>0 )
+		{
+			sendMessage("{\"m\":\"sldr\",\"f\":\""+frequency+"\"}");
+		}
+		else
+		{
+			//frequency must be greater than 0
+		}
+	}
+	
+	public void releaseLDREmbedded() {
+		sendMessage("{\"m\":\"dldr\"}");
 	}
 	/**
 	 * return the version of the Library.
