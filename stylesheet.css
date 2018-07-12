@@ -111,13 +111,15 @@ h2, h4, h5, th {
 
 h3 {
 	font-size:1.1em;
-	font-weight:bold;
+	line-height: 1.6;
+	font-weight:normal;
 	padding:5px;
 }
 
 
 p { 
 	font-size:1em;
+	line-height: 1.5;
 	width:90%;
 	margin-bottom:20px;
 }
@@ -144,7 +146,6 @@ a {
 	font-weight: normal;
 }
 
-
 a:hover, 
 a:active {
 	text-decoration: underline;
@@ -156,6 +157,10 @@ a:visited,
 a:link:visited {
 	text-decoration: underline;
 	font-weight: normal;
+}
+
+#menu a {
+	text-decoration: none;
 }
 
 
@@ -183,8 +188,6 @@ body {
 }
 
 
-
-
 h1, h4, h5, h6 {
 	color:#666;
 }
@@ -204,7 +207,7 @@ pre, code {
 	background-color: #eee;
 }
 
-a,strong {
+a{
 	color: #000;
 }
 
@@ -221,12 +224,18 @@ a:link:visited {
 }
 
 
-#footer, #menu {
-	background-color:#fff;
-	color:#000;
+#menu {
+	background-color:#000;
+	color:#fff;
 }
 
 
-#footer a, #menu a {
-	color:#000;
+#menu a {
+	color:#fff;
+}
+
+#menu a:hover,
+#menu a:active {
+	color:#ooo;
+	background-color: :#fff;
 }
