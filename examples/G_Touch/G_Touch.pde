@@ -16,7 +16,7 @@ float   touchUpEvent=0;
 
 void setup(){
    size(320,568,P3D);
-   t = new Tramontana(this,"192.168.1.13");
+   t = new Tramontana(this,"192.168.1.11");
    t.subscribeTouch();
    touchedDown = new PVector(-100,-100);
    touchedUp = new PVector(-100,-100);
