@@ -26,15 +26,14 @@ body {
 #header {
 	float:left;
 	padding-top:24px;
-	padding-bottom:48px;
+	padding-bottom:20px;
 }
 
 #menu {
-	margin-top:16px;
+	margin-top:0px;
 	float:left;
-	margin-bottom:64px;
+	margin-bottom:40px;
 }
-
 
 #about,
 #download,
@@ -43,6 +42,10 @@ body {
 #misc {
 	width:480px;
 	float:left;
+	margin-right:24px;
+}
+#pheadline{
+	max-width:480px;
 	margin-right:24px;
 }
 
@@ -100,7 +103,7 @@ h2, h3, h4, h5, th {
 p { 
 	font-size:1em;
 	width:90%;
-	margin-bottom:32px;
+	margin-bottom:20px;
 }
 
 
