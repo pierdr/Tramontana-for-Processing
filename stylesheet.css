@@ -32,7 +32,9 @@ body {
 #menu {
 	margin-top:0px;
 	float:left;
-	margin-bottom:40px;
+	margin-bottom:20px;
+	padding: 5px;
+	width:480px;
 }
 
 #about,
@@ -79,6 +81,12 @@ ul {
 	padding-right:6px; 
 }
 
+code {
+  display: block;
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
 
 
 
@@ -92,12 +100,20 @@ h1 {
 }
 
 
-h2, h3, h4, h5, th {
-	font-size:1.3em;
+h2, h4, h5, th {
+	font-size:1.1em;
 	font-weight:normal;
 	margin-bottom:4px;
+	padding: 5px;
 }
 
+
+
+h3 {
+	font-size:1.1em;
+	font-weight:bold;
+	padding:5px;
+}
 
 
 p { 
@@ -156,51 +172,60 @@ img {
 
 
 body {
-	color : #333;
+	color : #000;
 	background-color :#fff;
 }
 
 
 #header {
 	background-color:#fff;
-	color:#333;
+	color:#000;
 }
 
 
 
-h1, h2, h3, h4, h5, h6 {
+h1, h4, h5, h6 {
 	color:#666;
+}
+
+h2 {
+	color: #fff;
+	background-color: #000;
+}
+
+h3{
+	color:#000;
+	background-color: #fff;
 }
 
 
 pre, code {  
-	color: #000000;
+	background-color: #eee;
 }
 
-
 a,strong {
-	color: #333;
+	color: #000;
 }
 
 
 a:hover, 
 a:active {
-	color: #333;
+	color: #000;
 }
 
 
 a:visited,
 a:link:visited {
-	color: #333;
+	color: #000;
 }
 
 
 #footer, #menu {
 	background-color:#fff;
-	color:#333;
+	color:#000;
 }
 
 
 #footer a, #menu a {
-	color:#333;
+	color:#000;
 }
