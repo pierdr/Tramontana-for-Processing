@@ -2,7 +2,7 @@
 # UTF-8 supported.
 
 # The name of your Library as you want it formatted.
-name = Tramontana for Processing
+name = Tramontana
 
 # List of authors. Links can be provided using the syntax [author name](url).
 authors = [Pierluigi Dalla Rosa](http://www.pierdr.com)
@@ -25,7 +25,7 @@ categories = Utilities
 # repeating the name of your Library here. Also, avoid saying anything redundant 
 # like mentioning that it's a Library. This should start with a capitalized 
 # letter, and end with a period.
-sentence = Tramontana is a platform for interactive spaces. 
+sentence = Tramontana - prototyping and creative kit for multi-device interactions and experiences. 
 
 # Additional information suitable for the Processing website. The value of
 # 'sentence' always will be prepended, so you should start by writing the
@@ -41,11 +41,11 @@ paragraph = With Tramontana will be simple to architect coreographies and intera
 # compare different versions of the same Library, and check if an update is 
 # available. You should think of it as a counter, counting the total number of 
 # releases you've had.
-version = 10  # This must be parsable as an int
+version = 11  # This must be parsable as an int
 
 # The version as the user will see it. If blank, the version attribute will be 
 # used here. This should be a single word, with no spaces.
-prettyVersion = 1.0.2  # This is treated as a String
+prettyVersion = 1.0.3  # This is treated as a String
 
 # The min and max revision of Processing compatible with your Library.
 # Note that these fields use the revision and not the version of Processing, 
